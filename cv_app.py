@@ -1,5 +1,29 @@
 import streamlit as st
 from datetime import datetime
+import qrcode
+from PIL import Image
+import io
+
+def create_qr_code(url):
+    """Crea un código QR con estilo personalizado"""
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=10,
+        border=2,
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+
+    # Crear QR con colores personalizados
+    qr_image = qr.make_image(fill_color="#234567", back_color="white")
+    
+    # Convertir a bytes para mostrar en Streamlit
+    img_byte_arr = io.BytesIO()
+    qr_image.save(img_byte_arr, format='PNG')
+    img_byte_arr = img_byte_arr.getvalue()
+    
+    return img_byte_arr
 
 def main():
     # Configuración de la página
@@ -9,25 +33,22 @@ def main():
         layout="centered"
     )
 
-    # Estilos CSS básicos
-    st.markdown("""
-        <style>
-        .header {
-            text-align: center;
-            padding: 1rem;
-            background: linear-gradient(135deg, #234567 0%, #2874A6 100%);
-            color: white;
-            border-radius: 10px;
-            margin-bottom: 2rem;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    # URL de tu CV online
+    cv_url = "https://cv-diego-8g83wat9eekqxb8vkvgldt.streamlit.app/"
 
-    # Encabezado
-    st.markdown('<div class="header">', unsafe_allow_html=True)
-    st.title("🌊 Diego Hernández-Cerón")
-    st.subheader("Oceanógrafo e Investigador")
-    st.markdown("</div>", unsafe_allow_html=True)
+    # Crear dos columnas para el encabezado
+    col1, col2 = st.columns([3, 1])
+
+    with col1:
+        # Encabezado
+        st.title("🌊 Diego Hernández-Cerón")
+        st.subheader("Oceanógrafo e Investigador")
+
+    with col2:
+        # Generar y mostrar QR
+        qr_image = create_qr_code(cv_url)
+        st.image(qr_image, width=150)
+        st.caption("Escanea para compartir")
 
     # Información de Contacto
     st.markdown("### 📬 Contacto")
