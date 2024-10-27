@@ -3,40 +3,30 @@ from datetime import datetime
 import qrcode
 from PIL import Image
 import io
-import json
-import os
 
-# Función para cargar el contador de visitas
-def load_visit_count():
-    if 'visit_count' not in st.session_state:
-        st.session_state.visit_count = 0
-        if os.path.exists('.streamlit/analytics.json'):
-            try:
-                with open('.streamlit/analytics.json', 'r') as f:
-                    data = json.load(f)
-                    st.session_state.visit_count = data.get('visits', 0)
-            except:
-                st.session_state.visit_count = 0
-    return st.session_state.visit_count
-
-# Función para guardar el contador de visitas
-def save_visit_count():
-    if not os.path.exists('.streamlit'):
-        os.makedirs('.streamlit')
-    try:
-        with open('.streamlit/analytics.json', 'w') as f:
-            json.dump({'visits': st.session_state.visit_count + 1}, f)
-    except:
-        pass
-
-# [Mantener la función create_qr_code() igual que antes...]
+def create_qr_code(url):
+    """Crea un código QR de alta resolución"""
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=15,        # Mayor resolución
+        border=1,           # Borde más delgado
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+    
+    # Crear QR con colores personalizados
+    qr_image = qr.make_image(fill_color="#234567", back_color="white")
+    
+    # Asegurar que la imagen esté en modo RGB para mejor calidad
+    qr_image = qr_image.convert('RGB')
+    
+    # Convertir a bytes con alta calidad
+    img_byte_arr = io.BytesIO()
+    qr_image.save(img_byte_arr, format='PNG', quality=100, optimize=False)
+    return img_byte_arr.getvalue()
 
 def main():
-    # Incrementar contador de visitas
-    visit_count = load_visit_count()
-    st.session_state.visit_count += 1
-    save_visit_count()
-
     # Configuración de la página
     st.set_page_config(
         page_title="Diego Hernández-Cerón - Oceanógrafo",
@@ -44,58 +34,160 @@ def main():
         layout="centered"
     )
 
-    # Sidebar con analytics
-    with st.sidebar:
-        st.title("📊 Analytics")
-        st.metric("Visitas Totales", st.session_state.visit_count)
-        st.write(f"Última visita: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-        
-        # Información para el administrador
-        if st.checkbox("Mostrar detalles técnicos"):
-            st.write("Información del sistema:")
-            st.json({
-                "Sistema Operativo": os.name,
-                "Python Version": os.sys.version,
-                "Streamlit Version": st.__version__
-            })
+    # URL de tu CV online
+    cv_url = "https://cv-diego-8g83wat9eekqxb8vkvgldt.streamlit.app/"
 
-    # [Resto del código del CV igual que antes...]
+    # Crear dos columnas para el encabezado
+    col1, col2 = st.columns([3, 1])
 
-    # Footer con analytics básicos
-    st.markdown("---")
-    col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown(f"👀 Visitas: {st.session_state.visit_count}")
+        st.title("🌊 Diego Hernández-Cerón")
+        st.subheader("Oceanógrafo e Investigador")
+
     with col2:
-        st.markdown(f"📅 Última actualización: {datetime.now().strftime('%B %Y')}")
-    with col3:
-        if st.button("💫 ¡Me gusta!"):
-            if 'likes' not in st.session_state:
-                st.session_state.likes = 0
-            st.session_state.likes += 1
-            st.metric("Likes", st.session_state.likes)
+        qr_image = create_qr_code(cv_url)
+        st.image(qr_image, width=200)  # Mayor tamaño de visualización
+        st.caption("Escanea para compartir")
 
-    # Tracker de secciones más visitadas
-    if 'section_views' not in st.session_state:
-        st.session_state.section_views = {
-            'expediciones': 0,
-            'habilidades': 0,
-            'formacion': 0
-        }
+    # Información de Contacto
+    st.markdown("### 📬 Contacto")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write("📧 diego.jhc@gmail.com")
+        st.write("📱 +569 32104924")
+    with col2:
+        st.write("🌍 Quilpué, Chile")
+        st.write("🎂 20/09/1989")
 
-    # Analytics detallados (solo visible para ti)
-    if st.checkbox("Ver Analytics Detallados", key="show_analytics"):
-        st.markdown("### 📊 Analytics Detallados")
+    # Formación Académica
+    st.markdown("### 🎓 Formación Académica")
+    
+    with st.expander("PhD Student - Alfred Wegener Institute", expanded=True):
+        st.write("**Abril 2024-Agosto 2024 | Bremerhaven, Alemania**")
+        st.write("The effect of land-runoff on Antarctic coastal habitats")
+    
+    with st.expander("Magister en Oceanografía PUCV/UV", expanded=True):
+        st.write("**17 April 2023**")
+        st.write("Bottom-up controls on summer phytoplankton dynamics in the surface waters of the Gerlache-Bismarck Strait area, Western Antarctic Peninsula")
+    
+    with st.expander("Grado de Oceanografía PUCV", expanded=True):
+        st.write("**September 2015**")
+        st.write("Submarine landforms in fjords and bays of the Gerlache Strait, Western Antarctic Peninsula")
+        st.write("[Ver tesis](http://opac.pucv.cl/pucv_txt/txt-2500/UCC2858_01.pdf)")
+
+    # Expediciones Antárticas
+    st.markdown("### ❄️ Expediciones Antárticas")
+    
+    with st.expander("Expedición AWI (2024)", expanded=True):
+        st.write("**Abril 2024-Agosto 2024 | Alfred Wegener Institute**")
+        st.markdown("""
+        - Uso y calibración de sensores multiparamétricos EXO-2
+        - Procesamiento de datos de CTD in situ de grandes bases de datos Antárticas
+        - Visualización en ArcGIS Pro
+        - Procesamiento de imágenes RGB y multispectral de drone
+        - Organización y logística de campaña Antártica SIGMA-II
+        - Análisis de material particulado suspendido (SPM)
+        - Preparación de muestras para análisis químico en ICP-OES
+        """)
+
+    with st.expander("Expedición Antártica ECA-58 (2021-2022)", expanded=True):
+        st.write("**Octubre 2021 - Enero 2022 | Proyecto FONDECYT 1211338**")
+        st.markdown("""
+        **Área de estudio:** Bahía Maxwell, Península Antártica Occidental
         
-        # Gráfico de visitas por sección
-        st.bar_chart(st.session_state.section_views)
+        **Tareas principales:**
+        - CTD-casts completos (Temperatura, Salinidad, Oxígeno disuelto, Turbidez, Fluorescencia)
+        - Muestreo con botellas Niskin y GO-FLO
+        - Análisis de clorofila-a, macronutrientes, pH y alcalinidad
+        - Muestreo de bacterioplancton para RNA-metabarcoding
+        - Muestreo de agua dulce de glaciares para análisis de metales trazas
+        """)
+    
+    with st.expander("Expedición OPERANTAR XXXIV (2015)", expanded=True):
+        st.write("**25 Octubre - 18 Noviembre 2015 | Marina de Brasil**")
+        st.markdown("""
+        **Áreas de estudio:** 
+        - Paso Drake
+        - Estrecho de Bransfield
+        - Islas Shetland del Sur (King George y Decepción)
         
-        # Métricas adicionales
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("Tasa de Interacción", f"{(st.session_state.likes/st.session_state.visit_count*100):.1f}%")
-        with col2:
-            st.metric("Sección más popular", max(st.session_state.section_views, key=st.session_state.section_views.get))
+        **Tareas principales:**
+        - Adquisición de datos de batimetría multihaz
+        - Operación de perfilador sub-acústico
+        - Muestreo de sedimentos con gravity corer (~1000 m depth)
+        - Muestreo de bentos con box corer
+        - Muestreo de columna de agua con sistema CTD-roseta
+        """)
+
+    # Otras Expediciones
+    st.markdown("### 🚢 Otras Expediciones")
+    
+    with st.expander("Cimar 28 - Islas Oceánicas (2023)", expanded=True):
+        st.write("**Septiembre - Octubre 2023**")
+        st.markdown("""
+        **Ruta:** Valparaíso-Caldera-Islas Desventuradas-Juan Fernández
+        
+        **Tareas principales:**
+        - Muestreo de contaminantes orgánicos persistentes (POPs)
+        - Análisis de fases disueltas y particuladas
+        - Muestreo de carbono orgánico disuelto (DOC)
+        - Operación de sistemas de filtración avanzados
+        """)
+
+    # Habilidades Técnicas
+    st.markdown("### 💻 Habilidades Técnicas")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("#### Análisis de Datos")
+        st.markdown("""
+        - R/RStudio (Expert)
+        - Python/Matlab (Intermediate)
+        - Análisis estadístico avanzado:
+          - PCA, cluster analysis
+          - NMDS, RDA, db-RDA
+          - ANOVA, CCA
+          - GAMs
+          - Machine Learning en R
+        """)
+        
+    with col2:
+        st.markdown("#### Oceanografía y GIS")
+        st.markdown("""
+        - Ocean Data View
+        - CARIS-HIPS/Fledermaus
+        - ArcGIS Pro
+        - DJI Terra/Pix4D
+        - Procesamiento batimétrico
+        - Análisis de datos CTD
+        """)
+
+    # Becas y Financiamiento
+    st.markdown("### 🏆 Becas y Financiamiento")
+    st.info("""
+    - ANID National Master's Scholarship (14000 USD x 2 años)
+    - Fondap-IDEAL151500
+    - FONDECYT regular 1211338
+    - Contrato AWI (14000 EUR)
+    - DFG Project - GEOMAR-Kiel
+    """)
+
+    # Otros
+    st.markdown("### 📄 Certificaciones")
+    st.success("""
+    - Licencia de operación de drones europea
+    - ArcGIS Pro Training (2024)
+    - Inglés Intermedio profesional
+    - Licencia de conducir vigente
+    """)
+
+    # Footer
+    st.markdown("---")
+    st.markdown(
+        f"<div style='text-align: center; color: gray; font-size: 0.8em;'>Actualizado: {datetime.now().strftime('%B %Y')}</div>",
+        unsafe_allow_html=True
+    )
 
 if __name__ == "__main__":
     main()
