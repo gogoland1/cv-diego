@@ -5,12 +5,12 @@ from PIL import Image
 import io
 
 def create_qr_code(url):
-    """Crea un código QR con estilo personalizado"""
+    """Crea un código QR de alta resolución"""
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_H,
-        box_size=10,
-        border=2,
+        box_size=15,        # Mayor resolución
+        border=1,           # Borde más delgado
     )
     qr.add_data(url)
     qr.make(fit=True)
@@ -18,9 +18,12 @@ def create_qr_code(url):
     # Crear QR con colores personalizados
     qr_image = qr.make_image(fill_color="#234567", back_color="white")
     
-    # Convertir a bytes para mostrar en Streamlit
+    # Asegurar que la imagen esté en modo RGB para mejor calidad
+    qr_image = qr_image.convert('RGB')
+    
+    # Convertir a bytes con alta calidad
     img_byte_arr = io.BytesIO()
-    qr_image.save(img_byte_arr, format='PNG')
+    qr_image.save(img_byte_arr, format='PNG', quality=100, optimize=False)
     return img_byte_arr.getvalue()
 
 def main():
@@ -43,7 +46,7 @@ def main():
 
     with col2:
         qr_image = create_qr_code(cv_url)
-        st.image(qr_image, width=150)
+        st.image(qr_image, width=200)  # Mayor tamaño de visualización
         st.caption("Escanea para compartir")
 
     # Información de Contacto
