@@ -4,7 +4,24 @@ import qrcode
 from PIL import Image
 import io
 
-# [Mantener las funciones create_qr_code() igual que antes...]
+def create_qr_code(url):
+    """Crea un código QR con estilo personalizado"""
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=10,
+        border=2,
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+    
+    # Crear QR con colores personalizados
+    qr_image = qr.make_image(fill_color="#234567", back_color="white")
+    
+    # Convertir a bytes para mostrar en Streamlit
+    img_byte_arr = io.BytesIO()
+    qr_image.save(img_byte_arr, format='PNG')
+    return img_byte_arr.getvalue()
 
 def main():
     # Configuración de la página
