@@ -42,7 +42,7 @@ def main():
 
     with col1:
         st.title("🌊 Diego Hernández-Cerón")
-        st.subheader("Oceanógrafo e Investigador")
+        st.subheader("Oceanógrafo")
 
     with col2:
         qr_image = create_qr_code(cv_url)
@@ -78,7 +78,7 @@ def main():
     # Expediciones Antárticas
     st.markdown("### ❄️ Expediciones Antárticas")
     
-    with st.expander("Expedición AWI (2024)", expanded=True):
+    with st.expander("PhD Student AWI (2024)", expanded=True):
         st.write("**Abril 2024-Agosto 2024 | Alfred Wegener Institute**")
         st.markdown("""
         - Uso y calibración de sensores multiparamétricos EXO-2
