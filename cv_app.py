@@ -42,7 +42,7 @@ def main():
 
     with col1:
         st.title("🌊 Diego Hernández-Cerón")
-        st.subheader("Oceanógrafo e Investigador")
+        st.subheader("Oceanógrafo")
 
     with col2:
         qr_image = create_qr_code(cv_url)
